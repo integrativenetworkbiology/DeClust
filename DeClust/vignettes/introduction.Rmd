@@ -1,0 +1,60 @@
+---
+title: "Introduction to R package DeClust"
+author: "Li Wang"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+# Introduction to R package _DeClust_
+
+## Input data of _DeClust_
+The only two required inputs for DeClust is the gene expression matrix for bulky tumor, and the number of cancer subtypes. It has to be noted that the gene expression matrix is in the form of gene by sample with the original expression value (before log-transformation and non-negative). The gene symbols need to be provided as rownames, since we used gene symbols to identify genes corresponding to the immune and stromal markers. We provided a test dataset of exprM as an example.
+
+```{r message=FALSE}
+library("DeClust");
+data(exprM)
+exprM[1:10,1:5];
+```
+## Run _DeClust_ algorithms
+```{r eval=FALSE, message=FALSE,results='hide',warning=FALSE}
+r<-deClustFromMarkerlognormal(exprM,3)
+
+```
+
+## Output data of _DeClust_
+DeClust outputs a named list with three components, i.e., _subtype_, _subtypeprofileM_ and _subtypefractionM_. _subtype_ is a vector with length equal to the sample size, and it stores the sample clustering results;_subtypeprofileM_ is a gene by compartment matrix, and it stores the inferred expression profile for each cancer subtype, immune and stromal compartment;_subtypefractionM_ is a sample by compartment matrix, and it stores the estimated fraction of each compartment for each sample.
+Below is an examplary output.
+```{r}
+data(r)
+table(r$subtype)
+r$subtype[1:10]
+r$subtypeprofileM[1:10,]
+r$subtypefractionM[1:10,]
+```
+## Selection of best subtype number
+In order to determine the best number of subtypes, we can run _deClust_ with different subtype numbers,calculate the corresponding BIC and plot the BIC curve. The subtype number at the elbow point of BIC curve can be chosen as the final subtype number.
+
+```{r eval=FALSE, message=FALSE,results='hide',warning=FALSE}
+BIC<-sapply(2:5,function(subtypeN)calculateBIC(exprM,deClustFromMarkerlognormal(exprM,subtypeN)))
+plot(2:5, BIC,xlab="subtypeN",type="b")
+```
+
+## Precomputed DeClust results of TCGA datasets
+_DeClust_ package also contains the precomputed results for 13 TCGA datasets using the full version of DeClust. The results are stored in two R variables,i.e., _TCGAdeClustsubtype_ and _TCGAdeClustprofileM_. _TCGAdeClustsubtype_ contains the precomputed sample subtypes for 13 TCGA datasets. It is a named list of length 13, each item corresponding to one of the 13 TCGA dataset. Each item in the list is a vector of subtype annotation for all samples in that TCGA dataset. 
+
+```{r}
+names(TCGAdeClustsubtype)
+TCGAdeClustsubtype[["BLCA"]][1:10]
+
+```
+_TCGAdeClustprofileM_ stores the precomputed expression profiles for 13 TCGA datasets by the full version of _DeClust_.After _DeClust_ was run for each of the 13 TCGA datasets separately (see methods of the paper for details),the estimated profiles for cancer subtypes and immune/stromal compartments were assembled together into one single matrix for down-stream analysis. Only genes existed in more than half of the 13 datasets were kept. In order to make profiles more comparable between different datasets (e.g.,removing batch effects), quantile normalization was applied to the assemebled profiles. It is stored as a matrix of 10890 rows(genes) and 87 columns(different cancer subtypes,and tissue-specific immune and stromal compartments) 
+
+```{r}
+dim(TCGAdeClustprofileM)
+TCGAdeClustprofileM[1:10,1:5]
+
+```

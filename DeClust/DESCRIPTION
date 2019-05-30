@@ -1,0 +1,12 @@
+Package: DeClust
+Title: Deconvolution-based Clustering of Bulk Tumor Transcriptome 
+Version: 0.1
+Author: Li Wang
+Maintainer: Li Wang <li.wang@mssm.edu>
+Description: DeClust takes bulk tumor transcriptome data as input and performs simultaneous sample deconvolution and clustering. It outputs the sample clustering results together with the the expression profiles for cancer cell subtypes, immune and stromal compartments
+Depends: R (>= 3.4.1),foreach, optimx
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
